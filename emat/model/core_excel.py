@@ -3,7 +3,7 @@ import yaml
 import os
 import time
 import inspect
-import pandas
+import pandas as pd
 
 from typing import Union, Mapping, Callable, Collection
 from ..workbench.connectors.excel import ExcelModel
@@ -158,3 +158,51 @@ class ExcelCoreModel(AbstractCoreModel, ExcelModel):
     @copydoc(AbstractCoreModel.archive)
     def archive(self, params, model_results_path=None, experiment_id=0):
         """This method is not needed for Excel models."""
+
+
+    def run_model(self, scenario, policy):
+        """This method is not needed for Excel models."""
+        print ("""This method is needed for Excel models.""")
+        experiment_id = scenario.get("_experiment_id_", None)
+        xl = {}
+        xl.update(scenario)
+        # xl.update(policy)
+        xl.pop("_experiment_id_")
+
+
+
+        m_names = self.scope.get_measure_names()
+        outputs = self.run_experiment(xl)
+        # print (m_names)
+        measures_dictionary = {name: outputs[name] for name in m_names}
+        # print (self.outcomes)
+        # for outcome in self.outcomes:
+        #     data = [outputs.get(var, None) for var in outcome.variable_name]
+        #     print (data,type(outcome),outcome.name, outcome.process(data))
+        # self.outcomes_output[outcome.name]            
+        # outcomes = measures_dictionary
+        # for outcome in outcomes:
+        #     data = [outputs.get(var, None) for var in outcome.variable_name]
+        #     print (data)
+        self.outcomes_output = measures_dictionary
+
+        m_df = pd.DataFrame(measures_dictionary, index=[experiment_id]) 
+
+        if experiment_id and hasattr(self, 'db') and self.db is not None and not self.db.readonly:
+            # _logger.debug(f"run_core_model write db {experiment_id}")
+            run_id = getattr(self, 'run_id', None)
+            if run_id is None:
+                run_id, _ = self.db.new_run_id(
+                    scope_name=self.scope.name,
+                    experiment_id=experiment_id,
+                    source=self.metamodel_id or 0,
+                )
+            # try:
+            self.db.write_experiment_measures(self.scope.name, self.metamodel_id, m_df, [run_id])
+            # except ReadOnlyDatabaseError:
+            #     warnings.warn("database is read-only, not storing model outcomes")
+            # except Exception as err:
+            #     _logger.exception(f"error in writing results to database: {str(err)}")
+            # else:
+            #     _logger.debug(f"run_core_model OK write db {experiment_id} {self.metamodel_id} {run_id}\n{m_df}")
+        # print (xl,outputs)
