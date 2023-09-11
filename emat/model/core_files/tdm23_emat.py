@@ -74,7 +74,7 @@ class TDM23_EMAT(FilesCoreModel):
         
         self.model_path     = os.path.normpath(self.config['model_path']) 
         self.archive_path   = os.path.normpath(self.config['model_archive'])
-        self.parent_scen    = 'AssignTransitOnly' #TODO: set in scope file
+        self.parent_scen    = 'Base' #TODO: set in scope file
         self.scen_name      = 'emat'
         self.scenario       = os.path.join(self.parent_scen, self.scen_name)
 
@@ -131,7 +131,7 @@ class TDM23_EMAT(FilesCoreModel):
             if xv in variables_done: continue
 
             _logger.info(f"\t\t\tSetting experiment variable for {xv} to {expvars[xv]}")
-            print("Setting experiment variable for {xv} to {expvars[xv]}")
+            print("Setting experiment variable for " + str(xv) + " to " + str(expvars[xv]))
 
 
             try:
@@ -139,8 +139,9 @@ class TDM23_EMAT(FilesCoreModel):
                 variables_done += func(self, macro, args, xv, expvars)
                       
             except KeyError:
-                _logger.exception("Experiment variable method not available")
-                raise
+                _logger.info("Experiment variable method not found, defaulting to direct set")
+                self.scenario_values[xv] = expvars[xv]
+                variables_done += xv
         
         # set values to scenario
         self.__load_model()        
@@ -294,23 +295,23 @@ class TDM23_EMAT(FilesCoreModel):
         """
 
         print("Started archive at {0}".format(time.strftime("%Y_%m_%d %H%M%S")))
-                   
-        #set / refresh the model_args dictionary
-        self.get_model_args()
 
-        #template folder contains all of the appropriate, but empty, subfolders
-        template_folder = os.path.join(self.archive_path , "_summary")
+        # create output folder
+        if not os.path.exists(archive_folder):
+            os.makedirs(archive_folder)
+            time.sleep(2)
+            os.makedirs(os.path.join(archive_folder, "_summary"))     
 
-        #if the archive folder already exists, delete it
-        if os.path.exists(archive_folder):
-            rmtree(archive_folder, ignore_errors = True)
+        # copy output summaries (all csv's)
+        for file in glob.glob(
+                os.path.join(self.scenario_path, "_summary", "*.csv")
+        ):
+            copy(file, os.path.join(archive_folder, "_summary"))   
 
-        # print (template_folder)
-        # print (archive_folder)
-        #create archive folder structure
-        copytree(template_folder, archive_folder)
+        # copy scenario file
+        copy(os.path.join(self.model_path, "CTPS_TDM23.scenarios"), archive_folder)           
+        copy(os.path.join(self.scenario_path, "config.json"), archive_folder)           
 
-    
         #close instance of TransCAD
         if self.tc is not None:
             self.stop_transcad()
@@ -377,8 +378,9 @@ class TDM23_EMAT(FilesCoreModel):
 
     # direct set - i.e. no macro, only argument is the tdm23 parameter name
     __METHOD_BY_EVAR = {
-        'Expanded Work from Home':      (__direct_scenario_param,None,"Regional Remote Level"),
-        'PnR Max Shadow Cost':      (__direct_scenario_param,None,"emat_transit_pnr_max_factor")
+        'Expanded Work from Home':  (__direct_scenario_param,None,"Regional Remote Level"),
+        'PnR Max Shadow Cost':      (__direct_scenario_param,None,"emat_transit_pnr_max_factor"),
+        "Dry Run":                  (__direct_scenario_param,None,"DryRun"),
     }
 
 
