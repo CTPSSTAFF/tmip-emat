@@ -366,6 +366,22 @@ class TDM23_EMAT(FilesCoreModel):
 
         self.scenario_values[param_name] = param_value
         return [evar]
+    
+    def __ebike_scenario_param(self, macro, ds_args, evar, expvars):
+        # set bike speed and maximum distance
+        # NOTE: this won't work with separate walk availability changes
+        # requires setting all distances in availability array
+
+        bike_spd = expvars[evar]
+
+        self.scenario_values["Bike Speed"] = bike_spd
+
+        mc_avail = {{"RS","SkimRD.dist < 999"},
+                       {"WK","SkimNM.dist <= 3"},
+                       {"BK","SkimNM.dist <= " + str(bike_spd)}}
+        self.scenario_values["ModeChoiceAvail"] = mc_avail        
+
+        return [evar]    
       
     # ============================================================================
     # Hooks to macros and methods for CTPS
@@ -381,6 +397,7 @@ class TDM23_EMAT(FilesCoreModel):
         'Expanded Work from Home':  (__direct_scenario_param,None,"Regional Remote Level"),
         'PnR Max Shadow Cost':      (__direct_scenario_param,None,"emat_transit_pnr_max_factor"),
         "Dry Run":                  (__direct_scenario_param,None,"DryRun"),
+        "Electric Bike":            (__ebike_scenario_param,None, None),
     }
 
 
