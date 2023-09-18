@@ -145,8 +145,8 @@ class TDM23_EMAT(FilesCoreModel):
         
         # set values to scenario
         self.__load_model()        
-        self.model_obj.CreateScenario(self.parent_scen, self.scen_name, "emat scenario")           
-        self.model_obj.ClearScenarioValues(self.scenario)
+        self.model_obj.DeleteScenario(self.scenario)           
+        self.model_obj.CreateScenario(self.parent_scen, self.scen_name, "emat scenario")     
         self.model_obj.SetScenario(self.scenario)
         self.model_obj.SetScenarioValues(self.scenario_values)
 
@@ -365,23 +365,7 @@ class TDM23_EMAT(FilesCoreModel):
         param_value = expvars[evar]
 
         self.scenario_values[param_name] = param_value
-        return [evar]
-    
-    def __ebike_scenario_param(self, macro, ds_args, evar, expvars):
-        # set bike speed and maximum distance
-        # NOTE: this won't work with separate walk availability changes
-        # requires setting all distances in availability array
-
-        bike_spd = expvars[evar]
-
-        self.scenario_values["Bike Speed"] = bike_spd
-
-        mc_avail = {{"RS","SkimRD.dist < 999"},
-                       {"WK","SkimNM.dist <= 3"},
-                       {"BK","SkimNM.dist <= " + str(bike_spd)}}
-        self.scenario_values["ModeChoiceAvail"] = mc_avail        
-
-        return [evar]    
+        return [evar]  
       
     # ============================================================================
     # Hooks to macros and methods for CTPS
@@ -394,10 +378,11 @@ class TDM23_EMAT(FilesCoreModel):
 
     # direct set - i.e. no macro, only argument is the tdm23 parameter name
     __METHOD_BY_EVAR = {
-        'Expanded Work from Home':  (__direct_scenario_param,None,"Regional Remote Level"),
-        'PnR Max Shadow Cost':      (__direct_scenario_param,None,"emat_transit_pnr_max_factor"),
+        'Work from Home':           (__direct_scenario_param,None,"Regional Remote Level"),
         "Dry Run":                  (__direct_scenario_param,None,"DryRun"),
-        "Electric Bike":            (__ebike_scenario_param,None, None),
+        "Electric Bike":            (__direct_scenario_param,None, "Bike Speed"),
+        "TNC Availability":         (__direct_scenario_param,None, "TNC Fare Wait Adjustment"),
+        "HRT Reliability":          (__direct_scenario_param,None, "Transit HRT Time Adjustment"),
     }
 
 
