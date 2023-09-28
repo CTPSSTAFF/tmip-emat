@@ -9,9 +9,10 @@ import psutil
 import weakref
 import numpy as np
 import pandas as pd
+import json 
 
 # ---Package Files
-from . import caliper3_dataframes as caliper3_dataframes
+import caliperpy.caliper3_dataframes as caliper3_dataframes
 
 # ----the objects to be imported via *
 # __all__ = dir(.) - ["Expression"]
@@ -89,8 +90,6 @@ class MatrixCurrency:
     def __add__(self, other):
         """ +
         """
-        # new_exp = Expression(self,"+",other)
-        # return self.assign_expression(new_exp)
         return Expression(self, "+", other)
 
     def __sub__(self, other):
@@ -106,8 +105,6 @@ class MatrixCurrency:
     def __truediv__(self, other):
         """ /
         """
-        # new_exp = Expression(self,"/",other)
-        # return self.assign_expression(new_exp)
         return Expression(self, "/", other)
 
     # in place matrix assignment operations
@@ -372,37 +369,9 @@ class GisdkObject:
         assert not self.__dict__["dk_server"] is None, "Cannot call method: missing connection to the Gisdk."
         assert not self.__dict__["dk_value"] is None, "Cannot call method: Gisdk object is None."
         assert isinstance(method_name, str), "Cannot call method: input method_name must be a string."
-        n = len(args)
-        assert n <= 9, "Too many input arguments."
         o = self.__dict__["dk_value"]
-        result = None
-        if n == 0:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name)
-        elif n == 1:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name, [_list(args[0])])
-        elif n == 2:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name, [_list(args[0]), _list(args[1])])
-        elif n == 3:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name, [_list(args[0]), _list(args[1]), _list(args[2])])
-        elif n == 4:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name, [_list(args[0]), _list(args[1]), _list(args[2]), _list(args[3])])
-        elif n == 5:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name,
-                                                      [_list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4])])
-        elif n == 6:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui",  o, method_name,
-                                                      [_list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5])])
-        elif n == 7:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name,
-                                                      [_list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6])])
-        elif n == 8:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name,
-                                                      [_list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6]),
-                                                          _list(args[7])])
-        elif n == 9:
-            result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name,
-                                                      [_list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6]),
-                                                          _list(args[7]), _list(args[8])])
+        # result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name, *(_list(arg) for arg in args))
+        result = self.__dict__["dk_server"].apply("apply_method", "gis_ui", o, method_name, args)
         if (self.__dict__["dk_server"].IsGisdkObject(result)):
             return GisdkObject(self.__dict__["dk_server"], result)
         return result
@@ -500,11 +469,40 @@ class Gisdk:
         try:
             self.__obj = win32com.client.Dispatch(com_server_name)
             self.com_client_obj = self.CreateGisdkObject("gis_ui", "COM.Client")
-            self.__client_data = self.__obj.RunUIMacro("init_client", "gis_ui", log_file, search_path)
+            client_data = self.__obj.RunUIMacro("init_client", "gis_ui", log_file, search_path)
+            if client_data is not None:
+                self.__client_data = dict(client_data)
+                self.__client_data["TempFolder"] = self.__obj.RunMacro("GetTempPath")
         except:
             print("Cannot access COM object: " + com_server_name)
             traceback.print_exc()
             raise
+
+    def GetClientData(self) -> dict:
+        if self.__client_data is not None:
+            return self.__client_data
+        return None
+
+    def GetMessageFile(self) -> dict:
+        temp_folder = self.GetTempFolder()
+        if temp_folder is None:
+            return None
+        return temp_folder + "script-message.json"
+
+    def GetTempFolder(self) -> str: 
+        if self.__obj is not None and self.__client_data is not None:
+            return self.__client_data["TempFolder"]
+
+    def PostMessage(self,topic_str: str, body_dict: dict) -> bool:
+        """ Post the message: { topic: topic_str, body: body_dict } to the program temp folder 
+        """
+        temp_folder = self.GetTempFolder()
+        if temp_folder is None:
+            return False 
+        data = dict({ 'topic': topic_str, 'body': dict(body_dict) })        
+        with open(self.GetMessageFile(), 'w') as json_file:
+            json.dump(data,json_file)
+        return True 
 
     def IsConnected(self):
         return self.__obj is not None
@@ -526,7 +524,7 @@ class Gisdk:
         if obj is None:
             return None
         obj_type = self.__obj.RunUIMacro("get_object_type", "gis_ui", obj)
-        if obj_type == "null":
+        if obj_type is "null":
             return None
         return obj_type
 
@@ -610,34 +608,8 @@ class Gisdk:
         if (not isinstance(function_name, str)):
             return None
         assert function_name.find("__") == -1, "A Gisdk instance or a private attribute is not callable as a function."
-        n = len(args)
-        assert (n < 9), 'Too many input arguments'
         try:
-            if n == 0:
-                o = self.__obj.RunMacro(function_name)
-            elif n == 1:
-                o = self.__obj.RunMacro(function_name, _list(args[0]))
-            elif n == 2:
-                o = self.__obj.RunMacro(function_name, _list(args[0]), _list(args[1]))
-            elif n == 3:
-                o = self.__obj.RunMacro(function_name, _list(args[0]), _list(args[1]), _list(args[2]))
-            elif n == 4:
-                o = self.__obj.RunMacro(function_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]))
-            elif n == 5:
-                o = self.__obj.RunMacro(function_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]))
-            elif n == 6:
-                o = self.__obj.RunMacro(function_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]))
-            elif n == 7:
-                o = self.__obj.RunMacro(function_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6]))
-            elif n == 8:
-                o = self.__obj.RunMacro(function_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6]),
-                                        _list(args[7]))
-            elif n == 9:
-                o = self.__obj.RunMacro(function_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6]),
-                                        _list(args[7]), _list(args[8]))
-
-            #runstr = "o = self.__obj.RunMacro(function_name, " + ','.join([" _list(args[{0}])".format(i) for i in range(n)]) + ")"
-            # eval(runstr)
+            o = self.__obj.RunMacro(function_name, *(_list(arg) for arg in args))
         except:
             self.print_exception("Gisdk error executing function " + function_name + "(" + str(args) + ")")
             raise
@@ -693,7 +665,7 @@ class Gisdk:
     def SetAlternateInterface(self, ui_name=None):
         """ Set the alternate interface for running macros via RunMacro 
         """
-        if ui_name is None or (isinstance(ui_name, str) and ui_name == "gis_ui"):
+        if ui_name is None or (isinstance(ui_name, str) and ui_name is "gis_ui"):
             self.__ui_name = "gis_ui"
             return "gis_ui"
         if isinstance(ui_name, str) and not os.path.exists(ui_name):
@@ -719,33 +691,10 @@ class Gisdk:
     def apply(self, macro_name, ui_name="gis_ui", *args):
         """ Execute a gisdk macro in a specific UI. This method name is more Python-style.
         """
-        n = len(args)
         assert isinstance(macro_name, str), "Input macro_name must be a string"
         assert (ui_name is None) or isinstance(ui_name, str), "Input ui_name must be None or a string"
-        assert (n <= 9), 'Too many input arguments'
         try:
-            if n == 0:
-                o = self.__obj.RunUIMacro(macro_name, ui_name)
-            elif n == 1:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]))
-            elif n == 2:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]), _list(args[1]))
-            elif n == 3:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]), _list(args[1]), _list(args[2]))
-            elif n == 4:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]))
-            elif n == 5:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]))
-            elif n == 6:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]))
-            elif n == 7:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6]))
-            elif n == 8:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6]),
-                                          _list(args[7]))
-            elif n == 9:
-                o = self.__obj.RunUIMacro(macro_name, ui_name, _list(args[0]), _list(args[1]), _list(args[2]), _list(args[3]), _list(args[4]), _list(args[5]), _list(args[6]),
-                                          _list(args[7]), _list(args[8]))
+            o = self.__obj.RunUIMacro(macro_name, ui_name, *(_list(arg) for arg in args))
         except:
             self.print_exception("Gisdk error executing RunMacro('" + macro_name + "','" + ui_name + "'," + str(args) + ")")
             raise
@@ -756,7 +705,7 @@ class Gisdk:
     def CreateMatrixCurrency(self, m, core, rowindex, colindex, options):
         """ returns a python transcad matrix currency object
         """
-        mc = self.__obj.RunMacro("CreateMatrixCurrency", m, core, rowindex, colindex, options)
+        mc = self.__obj.RunMacro("CreateMatrixCurrency", m, core, rowindex, colindex, _list(options))
         return MatrixCurrency(self, mc)
 
     def GetMatrixEditorCurrency(self, editor_name):
@@ -768,13 +717,13 @@ class Gisdk:
     def GetDataVector(self, view_set, field, options=None):
         """ returns a python transcad vector object
         """
-        v = self.__obj.RunMacro("GetDataVector", view_set, field, options)
+        v = self.__obj.RunMacro("GetDataVector", view_set, field, _list(options))
         return Vector(self, v)
 
-    def GetMatrixVector(self, mc, type):
+    def GetMatrixVector(self, mc, options):
         """ returns a python transcad vector object
         """
-        v = self.__obj.RunMacro("GetMatrixVector", _list(mc), type)
+        v = self.__obj.RunMacro("GetMatrixVector", _list(mc), _list(options))
         return Vector(self, v)
 
     def Vector(self, length, type, options=None):
@@ -907,6 +856,10 @@ class Gisdk:
         if version.parse(pd.__version__) < version.parse("1.0.1"):
             warnings.warn('Please use pandas version later than 1.0.1.', ImportWarning)
 
+        # converting the FFB file to latest format
+        if caliper3_dataframes.is_old_bin_format(filename):
+            caliper3_dataframes.convert_bin_to_newformat(filename)
+            
         # datatypes and row length in bytes
         dt_list, tcType_list, nBytesPerRow = caliper3_dataframes.read_dtypes(filename, debug_msgs)
 
@@ -962,6 +915,17 @@ class Gisdk:
         df = caliper3_dataframes.read_datetime(df, dt_list, tcType_list)
 
         return df
+
+    # convert tuples into dictionary recursively
+    def TupleToDict(self, tup):
+        new_dict = {}
+        for element in tup:
+            if isinstance(element[1], tuple) and isinstance(element[1][0], tuple):
+                new_dict[element[0]] = self.TupleToDict(element[1])          
+            else:
+                new_dict[element[0]] = element[1]
+
+        return new_dict
 
     # ======================================================================================================
 
@@ -1057,4 +1021,4 @@ class TransModeler:
 
 
 if __name__ == "__main__":
-    print(""" Caliper Gisdk Core Module for Python 3 (c) 2020 Caliper Corporation, Newton MA, USA. All rights reserved.""")
+    print(""" Caliper Gisdk Core Module for Python 3 (c) 2023 Caliper Corporation, Newton MA, USA. All rights reserved.""")

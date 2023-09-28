@@ -6,6 +6,7 @@ from shutil import copyfile, copy, rmtree, copytree
 import glob
 import pandas as pd
 import numpy as np
+import subprocess
 
 from emat.scope.scope import Scope
 from emat.database.database import Database
@@ -72,14 +73,17 @@ class TDM23_EMAT(FilesCoreModel):
         self.sub.daemon = True
         self.tc = None
         
-        self.model_path     = os.path.normpath(self.config['model_path']) 
-        self.archive_path   = os.path.normpath(self.config['model_archive'])
+        self.model_path     = self.config['model_path']
+        #self.model_path     = os.path.normpath(self.config['model_path']) 
+        self.archive_path   = self.config['model_archive']
+        self.post_proc      = self.config['post_processor']
+        #self.archive_path   = os.path.normpath(self.config['model_archive'])
         self.parent_scen    = 'Base' #TODO: set in scope file
         self.scen_name      = 'emat'
         self.scenario       = os.path.join(self.parent_scen, self.scen_name)
 
         # derived values based on tdm23 structure
-        self.tdm_ui         = self.model_path + 'ui/tdm23_ui.dbd'
+        self.tdm_ui         = self.model_path + '/ui/tdm23_ui.dbd'
         self.scenario_path  = os.path.join(self.model_path, "outputs", self.scenario)
 
         self.scope_name = scope.name
@@ -144,7 +148,7 @@ class TDM23_EMAT(FilesCoreModel):
                 variables_done += xv
         
         # set values to scenario
-        self.__load_model()        
+        self.load_model()        
         self.model_obj.DeleteScenario(self.scenario)           
         self.model_obj.CreateScenario(self.parent_scen, self.scen_name, "emat scenario")     
         self.model_obj.SetScenario(self.scenario)
@@ -155,10 +159,13 @@ class TDM23_EMAT(FilesCoreModel):
 
     def pre_process(self):
         """
-        TODO: define necessary work - perhaps delete scenario output folder
+        delete scenario output folder
         """
+        #delete any existing model reports and logs from the output folder
+        # TODO: make the deletion conditional on scope specification
+        rmtree(self.scenario_path, ignore_errors=True)
 
-
+    
     def run(self):
         """
         Run the model.
@@ -172,16 +179,15 @@ class TDM23_EMAT(FilesCoreModel):
             self.start_transcad()
 
         # load model
-        self.__load_model(scen = self.scenario)
-
-        #delete any existing model reports and logs from the output folder
-        #for file in glob.glob(os.path.join(self.model_path, "scenarios", self.scenario, "Out", "massdot*.xml")):
-        #    os.remove(file)
+        self.load_model(scen = self.scenario)
             
         print("Starting model run at {0}".format(time.strftime("%Y_%m_%d %H%M%S")))
         _logger.info("Starting model run at {0}".format(time.strftime("%Y_%m_%d %H%M%S")))
-        
 
+        # try running tdm23 without threading
+        #self.model_obj.RunModel({})
+        
+        
         if self.sub.is_alive():
             pass
         else:
@@ -214,6 +220,7 @@ class TDM23_EMAT(FilesCoreModel):
         self.sub.completedSteps  = self.completedSteps
         #print(self.tc.ShowArray(["completed steps:",completedSteps]))
         
+        
         print("Completed model run at {0}\n".format(time.strftime("%Y_%m_%d %H%M%S")))
         _logger.info("Completed model run at {0}".format(time.strftime("%Y_%m_%d %H%M%S")))
 
@@ -242,6 +249,13 @@ class TDM23_EMAT(FilesCoreModel):
                 KeyError:
                     If post process macro is not available for the specified measure
         """
+
+        # run generic post processor
+        result = subprocess.run([self.post_proc,
+                                 os.path.normpath(self.scenario_path)],
+                                 shell=True, capture_output=True, text=True)
+        print(result.stdout)
+        print(result.stderr)
 
         pm_done = []
         for pm in measure_names:
@@ -302,9 +316,9 @@ class TDM23_EMAT(FilesCoreModel):
             time.sleep(2)
             os.makedirs(os.path.join(archive_folder, "_summary"))     
 
-        # copy output summaries (all csv's)
+        # copy output summaries (all files)
         for file in glob.glob(
-                os.path.join(self.scenario_path, "_summary", "*.csv")
+                os.path.join(self.scenario_path, "_summary", "*.*")
         ):
             copy(file, os.path.join(archive_folder, "_summary"))   
 
@@ -318,12 +332,12 @@ class TDM23_EMAT(FilesCoreModel):
 
         print("Completed archive at {0}\n".format(time.strftime("%Y_%m_%d %H%M%S")))
 
-    def __load_model(self, scen = 'Base'):
+    def load_model(self, scen = 'Base'):
         """
         Create Model Object to set parameters and run
             scen = default to Base if in setup, pass scenario name if running
         """
-        self.model_obj = self.tc.CreateGisdkObject("gis_ui", "Model.Runtime")
+        self.model_obj = self.tc.CreateGisdkObject(self.tdm_ui, "Model.Runtime")
         modelFileName = os.path.join(self.model_path , 'CTPS_TDM23.model')
         self.model_obj.CloseModel()
         self.model_obj.SetModel({
@@ -341,8 +355,9 @@ class TDM23_EMAT(FilesCoreModel):
         os.system("TASKKILL /F /IM tcw.exe")
         
         # now connect to TransCAD
-        logf = os.path.abspath( self.model_path + "TC_log_" + format(time.strftime("%Y_%m_%d %H%M%S")) + ".txt" )
+        logf = os.path.abspath( self.model_path + "\\emat\\runs\\TC_log_" + format(time.strftime("%Y_%m_%d%H%M%S")) + ".txt" )
         self.tc = cp.TransCAD.connect(log_file = logf)
+        print("Log file {0}\n".format(logf))
         
         if self.tc is None:
             _logger.error("ERROR: failed to attach to a TransCAD instance")
@@ -389,9 +404,140 @@ class TDM23_EMAT(FilesCoreModel):
     __MEASURE_PARSERS = [
 
         TableParser(
-                        filename = "wfh_calclog.csv",
+                        filename = "_summary\\wfh_calclog.csv",
 			            measure_getters ={'Regional_total': iloc[0, 1],},
                         on_bad_lines = 'skip'
+                    ),
 
-                    )
+        TableParser(
+                        filename = "_summary\\va.csv",
+			            measure_getters ={
+                            'BRMPO: VA ZV Shr': loc['BRMPO', 'zv_p'],
+                            'BRMPO: VA IV Shr': loc['BRMPO', 'iv_p'],
+                            'BRMPO: VA SV Shr': loc['BRMPO', 'sv_p'],
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),
+
+        TableParser(
+                        filename = "_summary\\per_trips.csv",
+			            measure_getters ={
+                            'BRMPO: Auto Shr': loc['BRMPO', 'auto_p'],
+                            'BRMPO: NM Shr': loc['BRMPO', 'nonm_p'],
+                            'BRMPO: TRN Shr': loc['BRMPO', 'trn_p'],
+                            'BRMPO: SB Shr': loc['BRMPO', 'sb_p'],
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),
+                    
+        TableParser(
+                        filename = "_summary\\hh_trips_geo.csv",
+			            measure_getters ={
+                            'BRMPO: hbw': loc['BRMPO', 'hbw'],
+                            'BRMPO: hbnw': loc['BRMPO', 'hbnw'],
+                            'BRMPO: nhbw': loc['BRMPO', 'nhbw'],
+                            'BRMPO: nhbnw': loc['BRMPO', 'nhbnw'],
+                            'BRMPO: HH Trips': loc['BRMPO', 'Total'],
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),
+
+        TableParser(
+                        filename = "_summary\\veh_trips.csv",
+			            measure_getters ={
+                            'BRMPO: Auto Trips': loc['BRMPO', 'auto'],
+                            'BRMPO: DA Trips': loc['BRMPO', 'da'],
+                            'BRMPO: SR Trips': loc['BRMPO', 'sr'],
+                            'BRMPO: MTRK Trips': loc['BRMPO', 'mtrk'],
+                            'BRMPO: HTRK Trips': loc['BRMPO', 'htrk'],
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),          
+
+        TableParser(
+                        filename = "_summary\\vmt_factype.csv",
+			            measure_getters ={
+                            'BRMPO: Freeway VMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO: Expressway VMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO: Mj Arterial VMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO: Mn Arterial VMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO: Total VMT': loc['BRMPO', 'Total'],
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),               
+
+        TableParser(
+                        filename = "_summary\\vmt_mode.csv",
+			            measure_getters ={
+                            'BRMPO: Auto VMT': loc['BRMPO', 'auto_vmt'],
+                            'BRMPO: DA VMT': loc['BRMPO', 'da_vmt'],
+                            'BRMPO: SR VMT': loc['BRMPO', 'sr_vmt'],
+                            'BRMPO: MTRK VMT': loc['BRMPO', 'mtrk_vmt'],
+                            'BRMPO: HTRK VMT': loc['BRMPO', 'htrk_vmt'],
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),     
+
+        TableParser(
+                        filename = "_summary\\cvmt_factype.csv",
+			            measure_getters ={
+                            'BRMPO: Freeway CVMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO: Expressway CVMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO: Mj Arterial CVMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO: Mn Arterial CVMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO: Total CVMT': loc['BRMPO', 'Total'],
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),       
+
+        TableParser(
+                        filename = "_summary\\cvmt_factype.csv",
+			            measure_getters ={
+                            'BRMPO: Freeway CVMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO: Expressway CVMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO: Mj Arterial CVMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO: Mn Arterial CVMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO: Total CVMT': loc['BRMPO', 'Total'],
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),        
+
+        TableParser(
+                        filename = "_summary\\trn_mode.csv",
+			            measure_getters ={
+                            'lbus': loc['lbus'],
+                            'xbus': loc['xbus'],
+                            'brt': loc['brt'],
+                            'lrt': loc['lrt'],
+                            'hr': loc['hr'],
+                            'cr': loc['cr'],
+                            'bt': loc['bt'],
+                            'shtl': loc['shtl'],
+                            'rta': loc['rta'],
+                            'regb': loc['regb'],
+                            'total transit': loc['Total']
+                            },
+                        on_bad_lines = 'skip',
+                        index_col=0
+                    ),                                                                                          
+        TableParser(
+                        filename = "_summary\\emission_highway_mpo.xlsx",
+                        reader_method = pd.read_excel,
+			            measure_getters ={
+                            'BRMPO: CO2': loc['BRMPO', 'CO2\n(kg)'],
+                            'BRMPO: CO': loc['BRMPO', 'CO\n(kg)'],
+                            },
+                        index_col=0
+                    ),    
+
+
+
     ]

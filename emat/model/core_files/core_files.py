@@ -456,19 +456,13 @@ class FilesCoreModel(AbstractCoreModel):
 				zipfile.ZipFile(experiment_archive_zip).extractall(tmpdir)
 				return self.load_measures(
 					measure_names,
-					abs_output_path=os.path.join(
-						tmpdir,
-						self.rel_output_path,
-					)
+					abs_output_path= tmpdir
 				)
 		else:
 			_logger.info(f"loading from {experiment_archive_path}")
 			return self.load_measures(
 				measure_names,
-				abs_output_path=os.path.join(
-					experiment_archive_path,
-					self.rel_output_path,
-				)
+				abs_output_path= experiment_archive_path
 			)
 
 	def archive(self, params, model_results_path, experiment_id:int=0):

@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import numpy as np
 import pandas as pd
 import csv
@@ -10,7 +10,7 @@ def read_dtypes(fname, debug_msgs=False):
     '''
         reads d_type of columns from dcb file
     '''
-    dcb_fname = fname.split('.bin')[0] + '.DCB'
+    dcb_fname = fname[:-4] + '.DCB'
     # --map from transCAD to numpy
     read_type_map = {'C': 'S', 'R': 'f', 'S': 'i', 'F': 'f', 'I': 'i', 'Date': 'i', 'Time': 'i'}
     field_list = []
@@ -18,11 +18,12 @@ def read_dtypes(fname, debug_msgs=False):
     with open(dcb_fname) as dcb_file:
         # looping over the lines
         for aLine in dcb_file:
-            aLine = aLine.strip()
-            aLine = aLine.split(',')
+            aLine = [aLine.strip()]
+            csv_gen = csv.reader(aLine, delimiter=',', quotechar='"')
+            aLine = [item for item in csv_gen][0]
             # ---the field definitions have 13 elements
             # TODO: (i) currently split all commnas; to ignore ones in quotes, (ii) date, time, date and time is to be interpreted
-            if len(aLine) >= 13:
+            if len(aLine) >= 4:
                 field_dict = {}
                 field_dict['name'] = aLine[0].strip('\'"')
                 # ---intepreting
@@ -285,3 +286,26 @@ def set_dt_values(df):
     return df
 
 #========================================================================================================
+
+# Checks if the bin file format is the old one
+def is_old_bin_format(fname):
+    dcb_fname = os.path.abspath(fname[:-4] + '.DCB')
+    with open(dcb_fname) as ifile:
+        for aLine in ifile:
+            aLine = aLine.strip()
+            if aLine[-6:] == 'binary':
+                return True
+
+    return False    
+
+# convert the old bin file to new bin file format
+def convert_bin_to_newformat(fname):
+    from caliperpy.caliper3 import TransCAD
+    dk = TransCAD.connect()
+    fullfname =  os.path.abspath(fname)
+    vw = dk.OpenTable("vw", "FFB", [fullfname, None])
+    temp_vw = dk.ExportView(vw + "|", "MEM", "temp_vw", None, None)
+    dk.CloseView(vw)
+    dk.ExportView(temp_vw + "|", "FFB", fullfname, None, None)
+    dk.CloseView(temp_vw)
+    ##TransCAD.disconnect() # keeping the connection alive for subsequent code that user might need.
