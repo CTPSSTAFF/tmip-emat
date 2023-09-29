@@ -313,18 +313,18 @@ class TDM23_EMAT(FilesCoreModel):
         # create output folder
         if not os.path.exists(archive_folder):
             os.makedirs(archive_folder)
-            time.sleep(2)
-            os.makedirs(os.path.join(archive_folder, "_summary"))     
+            time.sleep(2)   
 
-        # copy output summaries (all files)
-        for file in glob.glob(
-                os.path.join(self.scenario_path, "_summary", "*.*")
-        ):
-            copy(file, os.path.join(archive_folder, "_summary"))   
+        # copy full folders
+        full_folder = ["_summary","_networks","_assignment","_skim"]
+        for folder in full_folder:
+            source = os.path.join(self.scenario_path, folder)
+            dest = os.path.join(archive_folder, folder)
+            rmtree(dest,ignore_errors=True)
+            copytree(source, dest) 
 
-        # copy scenario file
-        copy(os.path.join(self.model_path, "CTPS_TDM23.scenarios"), archive_folder)           
-        copy(os.path.join(self.scenario_path, "config.json"), archive_folder)           
+        # copy scenario file and reports
+        copy(os.path.join(self.model_path, "CTPS_TDM23.scenarios"), archive_folder)       
 
         #close instance of TransCAD
         if self.tc is not None:
@@ -412,9 +412,9 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\va.csv",
 			            measure_getters ={
-                            'BRMPO: VA ZV Shr': loc['BRMPO', 'zv_p'],
-                            'BRMPO: VA IV Shr': loc['BRMPO', 'iv_p'],
-                            'BRMPO: VA SV Shr': loc['BRMPO', 'sv_p'],
+                            'BRMPO_VA ZV Shr': loc['BRMPO', 'zv_p'],
+                            'BRMPO_VA IV Shr': loc['BRMPO', 'iv_p'],
+                            'BRMPO_VA SV Shr': loc['BRMPO', 'sv_p'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -423,10 +423,10 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\per_trips.csv",
 			            measure_getters ={
-                            'BRMPO: Auto Shr': loc['BRMPO', 'auto_p'],
-                            'BRMPO: NM Shr': loc['BRMPO', 'nonm_p'],
-                            'BRMPO: TRN Shr': loc['BRMPO', 'trn_p'],
-                            'BRMPO: SB Shr': loc['BRMPO', 'sb_p'],
+                            'BRMPO_Auto Shr': loc['BRMPO', 'auto_p'],
+                            'BRMPO_NM Shr': loc['BRMPO', 'nonm_p'],
+                            'BRMPO_TRN Shr': loc['BRMPO', 'trn_p'],
+                            'BRMPO_SB Shr': loc['BRMPO', 'sb_p'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -435,11 +435,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\hh_trips_geo.csv",
 			            measure_getters ={
-                            'BRMPO: hbw': loc['BRMPO', 'hbw'],
-                            'BRMPO: hbnw': loc['BRMPO', 'hbnw'],
-                            'BRMPO: nhbw': loc['BRMPO', 'nhbw'],
-                            'BRMPO: nhbnw': loc['BRMPO', 'nhbnw'],
-                            'BRMPO: HH Trips': loc['BRMPO', 'Total'],
+                            'BRMPO_hbw': loc['BRMPO', 'hbw'],
+                            'BRMPO_hbnw': loc['BRMPO', 'hbnw'],
+                            'BRMPO_nhbw': loc['BRMPO', 'nhbw'],
+                            'BRMPO_nhbnw': loc['BRMPO', 'nhbnw'],
+                            'BRMPO_HH Trips': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -448,11 +448,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\veh_trips.csv",
 			            measure_getters ={
-                            'BRMPO: Auto Trips': loc['BRMPO', 'auto'],
-                            'BRMPO: DA Trips': loc['BRMPO', 'da'],
-                            'BRMPO: SR Trips': loc['BRMPO', 'sr'],
-                            'BRMPO: MTRK Trips': loc['BRMPO', 'mtrk'],
-                            'BRMPO: HTRK Trips': loc['BRMPO', 'htrk'],
+                            'BRMPO_Auto Trips': loc['BRMPO', 'auto'],
+                            'BRMPO_DA Trips': loc['BRMPO', 'da'],
+                            'BRMPO_SR Trips': loc['BRMPO', 'sr'],
+                            'BRMPO_MTRK Trips': loc['BRMPO', 'mtrk'],
+                            'BRMPO_HTRK Trips': loc['BRMPO', 'htrk'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -461,11 +461,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\vmt_factype.csv",
 			            measure_getters ={
-                            'BRMPO: Freeway VMT': loc['BRMPO', 'Freeway'],
-                            'BRMPO: Expressway VMT': loc['BRMPO', 'Expressway'],
-                            'BRMPO: Mj Arterial VMT': loc['BRMPO', 'Major Arterial'],
-                            'BRMPO: Mn Arterial VMT': loc['BRMPO', 'Minor Arterial'],
-                            'BRMPO: Total VMT': loc['BRMPO', 'Total'],
+                            'BRMPO_Freeway VMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO_Expressway VMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO_Mj Arterial VMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO_Mn Arterial VMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO_Total VMT': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -474,11 +474,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\vmt_mode.csv",
 			            measure_getters ={
-                            'BRMPO: Auto VMT': loc['BRMPO', 'auto_vmt'],
-                            'BRMPO: DA VMT': loc['BRMPO', 'da_vmt'],
-                            'BRMPO: SR VMT': loc['BRMPO', 'sr_vmt'],
-                            'BRMPO: MTRK VMT': loc['BRMPO', 'mtrk_vmt'],
-                            'BRMPO: HTRK VMT': loc['BRMPO', 'htrk_vmt'],
+                            'BRMPO_Auto VMT': loc['BRMPO', 'auto_vmt'],
+                            'BRMPO_DA VMT': loc['BRMPO', 'da_vmt'],
+                            'BRMPO_SR VMT': loc['BRMPO', 'sr_vmt'],
+                            'BRMPO_MTRK VMT': loc['BRMPO', 'mtrk_vmt'],
+                            'BRMPO_HTRK VMT': loc['BRMPO', 'htrk_vmt'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -487,11 +487,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\cvmt_factype.csv",
 			            measure_getters ={
-                            'BRMPO: Freeway CVMT': loc['BRMPO', 'Freeway'],
-                            'BRMPO: Expressway CVMT': loc['BRMPO', 'Expressway'],
-                            'BRMPO: Mj Arterial CVMT': loc['BRMPO', 'Major Arterial'],
-                            'BRMPO: Mn Arterial CVMT': loc['BRMPO', 'Minor Arterial'],
-                            'BRMPO: Total CVMT': loc['BRMPO', 'Total'],
+                            'BRMPO_Freeway CVMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO_Expressway CVMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO_Mj Arterial CVMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO_Mn Arterial CVMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO_Total CVMT': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -500,11 +500,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\cvmt_factype.csv",
 			            measure_getters ={
-                            'BRMPO: Freeway CVMT': loc['BRMPO', 'Freeway'],
-                            'BRMPO: Expressway CVMT': loc['BRMPO', 'Expressway'],
-                            'BRMPO: Mj Arterial CVMT': loc['BRMPO', 'Major Arterial'],
-                            'BRMPO: Mn Arterial CVMT': loc['BRMPO', 'Minor Arterial'],
-                            'BRMPO: Total CVMT': loc['BRMPO', 'Total'],
+                            'BRMPO_Freeway CVMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO_Expressway CVMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO_Mj Arterial CVMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO_Mn Arterial CVMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO_Total CVMT': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -513,30 +513,71 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\trn_mode.csv",
 			            measure_getters ={
-                            'lbus': loc['lbus'],
-                            'xbus': loc['xbus'],
-                            'brt': loc['brt'],
-                            'lrt': loc['lrt'],
-                            'hr': loc['hr'],
-                            'cr': loc['cr'],
-                            'bt': loc['bt'],
-                            'shtl': loc['shtl'],
-                            'rta': loc['rta'],
-                            'regb': loc['regb'],
-                            'total transit': loc['Total']
+                            'lbus': loc['lbus',:],
+                            'xbus': loc['xbus',:],
+                            'brt': loc['brt',:],
+                            'lrt': loc['lrt',:],
+                            'hr': loc['hr',:],
+                            'cr': loc['cr',:],
+                            'bt': loc['bt',:],
+                            'shtl': loc['shtl',:],
+                            'rta': loc['rta',:],
+                            'regb': loc['regb',:],
+                            'total transit': loc['Total',:]
                             },
                         on_bad_lines = 'skip',
                         index_col=0
                     ),                                                                                          
         TableParser(
-                        filename = "_summary\\emission_highway_mpo.xlsx",
-                        reader_method = pd.read_excel,
+                        filename = "_summary\\emission_highway_mpo.csv",
 			            measure_getters ={
-                            'BRMPO: CO2': loc['BRMPO', 'CO2\n(kg)'],
-                            'BRMPO: CO': loc['BRMPO', 'CO\n(kg)'],
+                            'BRMPO_CO2': loc['BRMPO', 'CO2\n(kg)'],
+                            'BRMPO_CO': loc['BRMPO', 'CO\n(kg)'],
+                            'BRMPO_SO': loc['BRMPO', 'SO\n(kg)'],
+                            'BRMPO_NO': loc['BRMPO', 'NO\n(kg)'],
+                            'BRMPO_VOC': loc['BRMPO', 'VOC\n(kg)'],
                             },
                         index_col=0
                     ),    
+        TableParser(
+                        filename = "_summary\\metrics_aggregated.csv",
+                        measure_getters ={
+                            'linc_jobs_hwy': loc['Low-income', 'jobs_hwy'],
+                            'linc_jobs_trn': loc['Low-income', 'jobs_trn'],
+                            'linc_avg_time_hwy': loc['Low-income', 'avg_time_hwy'],
+                            'linc_avg_time_trn': loc['Low-income', 'avg_time_trn'],
+                            'linc_hlth_hwy': loc['Low-income', 'hlth_hwy'],
+                            'linc_hlth_trn': loc['Low-income', 'hlth_trn'],
+                            'linc_park_hwy': loc['Low-income', 'park_hwy'],
+                            'linc_park_trn': loc['Low-income', 'park_trn'],
+                            'mnr_jobs_hwy': loc['Minority', 'jobs_hwy'],
+                            'mnr_jobs_trn': loc['Minority', 'jobs_trn'],
+                            'mnr_avg_time_hwy': loc['Minority', 'avg_time_hwy'],
+                            'mnr_avg_time_trn': loc['Minority', 'avg_time_trn'],
+                            'mnr_hlth_hwy': loc['Minority', 'hlth_hwy'],
+                            'mnr_hlth_trn': loc['Minority', 'hlth_trn'],
+                            'mnr_park_hwy': loc['Minority', 'park_hwy'],
+                            'mnr_park_trn': loc['Minority', 'park_trn'],
+                            'n_linc_jobs_hwy': loc['Non-low-income', 'jobs_hwy'],
+                            'n_linc_jobs_trn': loc['Non-low-income', 'jobs_trn'],
+                            'n_linc_avg_time_hwy': loc['Non-low-income', 'avg_time_hwy'],
+                            'n_linc_avg_time_trn': loc['Non-low-income', 'avg_time_trn'],
+                            'n_linc_hlth_hwy': loc['Non-low-income', 'hlth_hwy'],
+                            'n_linc_hlth_trn': loc['Non-low-income', 'hlth_trn'],
+                            'n_linc_park_hwy': loc['Non-low-income', 'park_hwy'],
+                            'n_linc_park_trn': loc['Non-low-income', 'park_trn'],
+                            'n_mnr_jobs_hwy': loc['Nonminority', 'jobs_hwy'],
+                            'n_mnr_jobs_trn': loc['Nonminority', 'jobs_trn'],
+                            'n_mnr_avg_time_hwy': loc['Nonminority', 'avg_time_hwy'],
+                            'n_mnr_avg_time_trn': loc['Nonminority', 'avg_time_trn'],
+                            'n_mnr_hlth_hwy': loc['Nonminority', 'hlth_hwy'],
+                            'n_mnr_hlth_trn': loc['Nonminority', 'hlth_trn'],
+                            'n_mnr_park_hwy': loc['Nonminority', 'park_hwy'],
+                            'n_mnr_park_trn': loc['Nonminority', 'park_trn'],
+                        },
+                        index_col=0
+                    )
+
 
 
 
