@@ -12,7 +12,7 @@ import pandas as pd
 import json 
 
 # ---Package Files
-import caliperpy.caliper3_dataframes as caliper3_dataframes
+from . import caliper3_dataframes as caliper3_dataframes
 
 # ----the objects to be imported via *
 # __all__ = dir(.) - ["Expression"]
