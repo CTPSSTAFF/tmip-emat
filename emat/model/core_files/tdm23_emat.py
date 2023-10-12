@@ -410,7 +410,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),
 
         TableParser(
-                        filename = "_summary\\va.csv",
+                        filename = "_postproc\\emat\\va.csv",
 			            measure_getters ={
                             'BRMPO_VA ZV Shr': loc['BRMPO', 'zv_p'],
                             'BRMPO_VA IV Shr': loc['BRMPO', 'iv_p'],
@@ -421,7 +421,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),
 
         TableParser(
-                        filename = "_summary\\per_trips.csv",
+                        filename = "_postproc\\emat\\per_trips.csv",
 			            measure_getters ={
                             'BRMPO_Auto Shr': loc['BRMPO', 'auto_p'],
                             'BRMPO_NM Shr': loc['BRMPO', 'nonm_p'],
@@ -433,7 +433,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),
                     
         TableParser(
-                        filename = "_summary\\hh_trips_geo.csv",
+                        filename = "_postproc\\emat\\hh_trips_geo.csv",
 			            measure_getters ={
                             'BRMPO_hbw': loc['BRMPO', 'hbw'],
                             'BRMPO_hbnw': loc['BRMPO', 'hbnw'],
@@ -446,7 +446,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),
 
         TableParser(
-                        filename = "_summary\\veh_trips.csv",
+                        filename = "_postproc\\emat\\veh_trips.csv",
 			            measure_getters ={
                             'BRMPO_Auto Trips': loc['BRMPO', 'auto'],
                             'BRMPO_DA Trips': loc['BRMPO', 'da'],
@@ -459,7 +459,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),          
 
         TableParser(
-                        filename = "_summary\\vmt_factype.csv",
+                        filename = "_postproc\\emat\\vmt_factype.csv",
 			            measure_getters ={
                             'BRMPO_Freeway VMT': loc['BRMPO', 'Freeway'],
                             'BRMPO_Expressway VMT': loc['BRMPO', 'Expressway'],
@@ -472,7 +472,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),               
 
         TableParser(
-                        filename = "_summary\\vmt_mode.csv",
+                        filename = "_postproc\\emat\\vmt_mode.csv",
 			            measure_getters ={
                             'BRMPO_Auto VMT': loc['BRMPO', 'auto_vmt'],
                             'BRMPO_DA VMT': loc['BRMPO', 'da_vmt'],
@@ -485,7 +485,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),     
 
         TableParser(
-                        filename = "_summary\\cvmt_factype.csv",
+                        filename = "_postproc\\emat\\cvmt_factype.csv",
 			            measure_getters ={
                             'BRMPO_Freeway CVMT': loc['BRMPO', 'Freeway'],
                             'BRMPO_Expressway CVMT': loc['BRMPO', 'Expressway'],
@@ -498,7 +498,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),       
 
         TableParser(
-                        filename = "_summary\\cvmt_factype.csv",
+                        filename = "_postproc\\emat\\cvmt_factype.csv",
 			            measure_getters ={
                             'BRMPO_Freeway CVMT': loc['BRMPO', 'Freeway'],
                             'BRMPO_Expressway CVMT': loc['BRMPO', 'Expressway'],
@@ -511,7 +511,7 @@ class TDM23_EMAT(FilesCoreModel):
                     ),        
 
         TableParser(
-                        filename = "_summary\\trn_mode.csv",
+                        filename = "_postproc\\emat\\trn_mode.csv",
 			            measure_getters ={
                             'lbus': loc['lbus',:],
                             'xbus': loc['xbus',:],
@@ -529,7 +529,7 @@ class TDM23_EMAT(FilesCoreModel):
                         index_col=0
                     ),                                                                                          
         TableParser(
-                        filename = "_summary\\emission_highway_mpo.csv",
+                        filename = "_postproc\\emat\\emission_highway_mpo.csv",
 			            measure_getters ={
                             'BRMPO_CO2': loc['BRMPO', 'CO2\n(kg)'],
                             'BRMPO_CO': loc['BRMPO', 'CO\n(kg)'],
@@ -540,7 +540,7 @@ class TDM23_EMAT(FilesCoreModel):
                         index_col=0
                     ),    
         TableParser(
-                        filename = "_summary\\metrics_aggregated.csv",
+                        filename = "_postproc\\emat\\metrics_aggregated.csv",
                         measure_getters ={
                             'linc_jobs_hwy': loc['Low-income', 'jobs_hwy'],
                             'linc_jobs_trn': loc['Low-income', 'jobs_trn'],
