@@ -77,6 +77,7 @@ class TDM23_EMAT(FilesCoreModel):
         #self.model_path     = os.path.normpath(self.config['model_path']) 
         self.archive_path   = self.config['model_archive']
         self.post_proc      = self.config['post_processor']
+        self.results_path   = self.config['results_path']
         #self.archive_path   = os.path.normpath(self.config['model_archive'])
         self.parent_scen    = 'Base' #TODO: set in scope file
         self.scen_name      = 'emat'
@@ -355,7 +356,7 @@ class TDM23_EMAT(FilesCoreModel):
         os.system("TASKKILL /F /IM tcw.exe")
         
         # now connect to TransCAD
-        logf = os.path.abspath( self.model_path + "\\emat\\runs\\TC_log_" + format(time.strftime("%Y_%m_%d%H%M%S")) + ".txt" )
+        logf = os.path.abspath( self.results_path + "\\TC_log_" + format(time.strftime("%Y_%m_%d%H%M%S")) + ".txt" )
         self.tc = cp.TransCAD.connect(log_file = logf)
         print("Log file {0}\n".format(logf))
         
