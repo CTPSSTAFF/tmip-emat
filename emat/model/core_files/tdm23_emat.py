@@ -309,7 +309,7 @@ class TDM23_EMAT(FilesCoreModel):
             experiment_id (int, optional): id number for current experiment
         """
 
-        print("Started archive at {0}".format(time.strftime("%Y_%m_%d %H%M%S")))
+        print("Archiving results to {0} at {1}".format(archive_folder, time.strftime("%Y_%m_%d %H%M%S")))
 
         # create output folder
         if not os.path.exists(archive_folder):
@@ -359,6 +359,10 @@ class TDM23_EMAT(FilesCoreModel):
         logf = os.path.abspath( self.results_path + "\\TC_log_" + format(time.strftime("%Y_%m_%d%H%M%S")) + ".txt" )
         self.tc = cp.TransCAD.connect(log_file = logf)
         print("Log file {0}\n".format(logf))
+
+        # reset transcad report and log files (to avoid overfilling)
+        self.tc.ResetReportFile()
+        self.tc.ResetLogFile()
         
         if self.tc is None:
             _logger.error("ERROR: failed to attach to a TransCAD instance")
@@ -541,7 +545,7 @@ class TDM23_EMAT(FilesCoreModel):
                         index_col=0
                     ),    
         TableParser(
-                        filename = "_postproc\\emat\\metrics_aggregated.csv",
+                        filename = "_summary\\metrics_aggregated.csv",
                         measure_getters ={
                             'linc_jobs_hwy': loc['Low-income', 'jobs_hwy'],
                             'linc_jobs_trn': loc['Low-income', 'jobs_trn'],
