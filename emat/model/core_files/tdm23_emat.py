@@ -77,10 +77,11 @@ class TDM23_EMAT(FilesCoreModel):
         #self.model_path     = os.path.normpath(self.config['model_path']) 
         self.archive_path   = self.config['model_archive']
         self.post_proc      = self.config['post_processor']
-        self.results_path   = self.config['results_path']
+        self.log_path   = self.config['log_path']
         #self.archive_path   = os.path.normpath(self.config['model_archive'])
-        self.parent_scen    = 'Base' #TODO: set in scope file
+        self.parent_scen    = self.config['parent_scen']
         self.scen_name      = 'emat'
+        self.rel_output_path = os.path.join("outputs",self.parent_scen, self.scen_name)
         self.scenario       = os.path.join(self.parent_scen, self.scen_name)
 
         # derived values based on tdm23 structure
@@ -244,16 +245,22 @@ class TDM23_EMAT(FilesCoreModel):
             measure_names (List[str]):
                 List of measures to be processed
             output path (str):
-                Path to model output folder (Scenario-dependent in CTPS model)
+                (optional) Path to model archive folder
+                defaults to emat scenario outputs
 
             Raises:
                 KeyError:
                     If post process macro is not available for the specified measure
         """
 
+        # output_path is specified when running against archive, otherwise run 
+        # default scenario
+        if output_path is None: 
+            output_path = os.path.normpath(self.scenario_path)
+
         # run generic post processor
         result = subprocess.run([self.post_proc,
-                                 os.path.normpath(self.scenario_path)],
+                                 output_path],
                                  shell=True, capture_output=True, text=True)
         print(result.stdout)
         print(result.stderr)
@@ -317,7 +324,7 @@ class TDM23_EMAT(FilesCoreModel):
             time.sleep(2)   
 
         # copy full folders
-        full_folder = ["_summary","_networks","_assignment","_skim"]
+        full_folder = ["_summary","_postproc","_networks","_assignment","_skim"]
         for folder in full_folder:
             source = os.path.join(self.scenario_path, folder)
             dest = os.path.join(archive_folder, folder)
@@ -326,6 +333,10 @@ class TDM23_EMAT(FilesCoreModel):
 
         # copy scenario file and reports
         copy(os.path.join(self.model_path, "CTPS_TDM23.scenarios"), archive_folder)       
+        copy(os.path.join(self.scenario_path, "tdm23.db"), archive_folder)       
+        copy(os.path.join(self.scenario_path, "*.xml"), archive_folder)       
+        copy(os.path.join(self.scenario_path, "*.xsl"), archive_folder)       
+        copy(os.path.join(self.scenario_path, "config.json"), archive_folder)       
 
         #close instance of TransCAD
         if self.tc is not None:
@@ -356,7 +367,7 @@ class TDM23_EMAT(FilesCoreModel):
         os.system("TASKKILL /F /IM tcw.exe")
         
         # now connect to TransCAD
-        logf = os.path.abspath( self.results_path + "\\TC_log_" + format(time.strftime("%Y_%m_%d%H%M%S")) + ".txt" )
+        logf = os.path.abspath( self.log_path + "\\TC_log_" + format(time.strftime("%Y_%m_%d%H%M%S")) + ".txt" )
         self.tc = cp.TransCAD.connect(log_file = logf)
         print("Log file {0}\n".format(logf))
 
