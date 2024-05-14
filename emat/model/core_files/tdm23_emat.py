@@ -596,7 +596,7 @@ class TDM23_EMAT(FilesCoreModel):
                             'n_mnr_park_trn': loc['Nonminority', 'park_trn'],
                         },
                         index_col=0
-                    )
+                    ),
         TableParser(
                         filename = "_summary\\postproc\\equity_dod.csv",
                         measure_getters ={
