@@ -597,7 +597,28 @@ class TDM23_EMAT(FilesCoreModel):
                         },
                         index_col=0
                     )
-
+        TableParser(
+                        filename = "_summary\\postproc\\equity_dod.csv",
+                        measure_getters ={
+                            'inc_jobs_hwy': loc['income', 'jobs_hwy'],
+                            'inc_jobs_trn': loc['income', 'jobs_trn'],
+                            'inc_avg_time_hwy': loc['income', 'avg_time_hwy'],
+                            'inc_avg_time_trn': loc['income', 'avg_time_trn'],
+                            'inc_hlth_hwy': loc['income', 'hlth_hwy'],
+                            'inc_hlth_trn': loc['income', 'hlth_trn'],
+                            'inc_park_hwy': loc['income', 'park_hwy'],
+                            'inc_park_trn': loc['income', 'park_trn'],
+                            'eth_jobs_hwy': loc['minority', 'jobs_hwy'],
+                            'eth_jobs_trn': loc['minority', 'jobs_trn'],
+                            'eth_avg_time_hwy': loc['minority', 'avg_time_hwy'],
+                            'eth_avg_time_trn': loc['minority', 'avg_time_trn'],
+                            'eth_hlth_hwy': loc['minority', 'hlth_hwy'],
+                            'eth_hlth_trn': loc['minority', 'hlth_trn'],
+                            'eth_park_hwy': loc['minority', 'park_hwy'],
+                            'eth_park_trn': loc['minority', 'park_trn'],
+                        },
+                        index_col=0
+                    )
 
 
 
