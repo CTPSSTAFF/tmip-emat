@@ -164,8 +164,8 @@ class TDM23_EMAT(FilesCoreModel):
         delete scenario output folder
         """
         #delete any existing model reports and logs from the output folder
-        # TODO: make the deletion conditional on scope specification
-        rmtree(self.scenario_path, ignore_errors=True)
+        if self.config["debug_nodelete"] == False:
+            rmtree(self.scenario_path, ignore_errors=True)
 
     
     def run(self):
@@ -217,6 +217,7 @@ class TDM23_EMAT(FilesCoreModel):
             print (self.sub.is_alive())
 
             sys.exit()
+        
         
         self.completedSteps = self.model_obj.GetCompletedSteps()
         self.sub.completedSteps  = self.completedSteps
@@ -410,11 +411,12 @@ class TDM23_EMAT(FilesCoreModel):
 
     # direct set - i.e. no macro, only argument is the tdm23 parameter name
     __METHOD_BY_EVAR = {
-        'Work from Home':           (__direct_scenario_param,None,"Regional Remote Level"),
         "Dry Run":                  (__direct_scenario_param,None,"DryRun"),
         "Electric Bike":            (__direct_scenario_param,None, "Bike Speed"),
         "TNC Availability":         (__direct_scenario_param,None, "TNC Fare Wait Adjustment"),
         "HRT Reliability":          (__direct_scenario_param,None, "Transit HRT Time Adjustment"),
+        "Post-Pandemic WFH":        (__direct_scenario_param,None, "WFH Adjustment"),
+        "AV Operations":            (__direct_scenario_param,None, "AV PCE Adjustment"),
     }
 
 
@@ -429,9 +431,9 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\emat\\va.csv",
 			            measure_getters ={
-                            'BRMPO_VA ZV Shr': loc['BRMPO', 'zv_p'],
-                            'BRMPO_VA IV Shr': loc['BRMPO', 'iv_p'],
-                            'BRMPO_VA SV Shr': loc['BRMPO', 'sv_p'],
+                            'BRMPO_VA_ZV_Shr': loc['BRMPO', 'zv_p'],
+                            'BRMPO_VA_IV_Shr': loc['BRMPO', 'iv_p'],
+                            'BRMPO_VA_SV_Shr': loc['BRMPO', 'sv_p'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -440,11 +442,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\emat\\per_trips.csv",
 			            measure_getters ={
-                            'BRMPO_Auto Shr': loc['BRMPO', 'auto_p'],
-                            'BRMPO_NM Shr': loc['BRMPO', 'nonm_p'],
-                            'BRMPO_TRN Shr': loc['BRMPO', 'trn_p'],
-                            'BRMPO_SB Shr': loc['BRMPO', 'sb_p'],
-                            'BRMPO_SB Trip': loc['BRMPO', 'sb'],
+                            'BRMPO_Auto_Shr': loc['BRMPO', 'auto_p'],
+                            'BRMPO_NM_Shr': loc['BRMPO', 'nonm_p'],
+                            'BRMPO_TRN_Shr': loc['BRMPO', 'trn_p'],
+                            'BRMPO_SB_Shr': loc['BRMPO', 'sb_p'],
+                            'BRMPO_SB_Trip': loc['BRMPO', 'sb'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -457,7 +459,7 @@ class TDM23_EMAT(FilesCoreModel):
                             'BRMPO_hbnw': loc['BRMPO', 'hbnw'],
                             'BRMPO_nhbw': loc['BRMPO', 'nhbw'],
                             'BRMPO_nhbnw': loc['BRMPO', 'nhbnw'],
-                            'BRMPO_HH Trips': loc['BRMPO', 'Total'],
+                            'BRMPO_HH_Trips': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -466,11 +468,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\emat\\veh_trips.csv",
 			            measure_getters ={
-                            'BRMPO_Auto Trips': loc['BRMPO', 'auto'],
-                            'BRMPO_DA Trips': loc['BRMPO', 'da'],
-                            'BRMPO_SR Trips': loc['BRMPO', 'sr'],
-                            'BRMPO_MTRK Trips': loc['BRMPO', 'mtrk'],
-                            'BRMPO_HTRK Trips': loc['BRMPO', 'htrk'],
+                            'BRMPO_Auto_Trips': loc['BRMPO', 'auto'],
+                            'BRMPO_DA_Trips': loc['BRMPO', 'da'],
+                            'BRMPO_SR_Trips': loc['BRMPO', 'sr'],
+                            'BRMPO_MTRK_Trips': loc['BRMPO', 'mtrk'],
+                            'BRMPO_HTRK_Trips': loc['BRMPO', 'htrk'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -479,11 +481,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\emat\\vmt_factype.csv",
 			            measure_getters ={
-                            'BRMPO_Freeway VMT': loc['BRMPO', 'Freeway'],
-                            'BRMPO_Expressway VMT': loc['BRMPO', 'Expressway'],
-                            'BRMPO_Mj Arterial VMT': loc['BRMPO', 'Major Arterial'],
-                            'BRMPO_Mn Arterial VMT': loc['BRMPO', 'Minor Arterial'],
-                            'BRMPO_Total VMT': loc['BRMPO', 'Total'],
+                            'BRMPO_Freeway_VMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO_Expressway_VMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO_Mj Arterial_VMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO_Mn Arterial_VMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO_Total_VMT': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -492,11 +494,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\emat\\vmt_mode.csv",
 			            measure_getters ={
-                            'BRMPO_Auto VMT': loc['BRMPO', 'auto_vmt'],
-                            'BRMPO_DA VMT': loc['BRMPO', 'da_vmt'],
-                            'BRMPO_SR VMT': loc['BRMPO', 'sr_vmt'],
-                            'BRMPO_MTRK VMT': loc['BRMPO', 'mtrk_vmt'],
-                            'BRMPO_HTRK VMT': loc['BRMPO', 'htrk_vmt'],
+                            'BRMPO_Auto_VMT': loc['BRMPO', 'auto_vmt'],
+                            'BRMPO_DA_VMT': loc['BRMPO', 'da_vmt'],
+                            'BRMPO_SR_VMT': loc['BRMPO', 'sr_vmt'],
+                            'BRMPO_MTRK_VMT': loc['BRMPO', 'mtrk_vmt'],
+                            'BRMPO_HTRK_VMT': loc['BRMPO', 'htrk_vmt'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -505,11 +507,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\emat\\cvmt_factype.csv",
 			            measure_getters ={
-                            'BRMPO_Freeway CVMT': loc['BRMPO', 'Freeway'],
-                            'BRMPO_Expressway CVMT': loc['BRMPO', 'Expressway'],
-                            'BRMPO_Mj Arterial CVMT': loc['BRMPO', 'Major Arterial'],
-                            'BRMPO_Mn Arterial CVMT': loc['BRMPO', 'Minor Arterial'],
-                            'BRMPO_Total CVMT': loc['BRMPO', 'Total'],
+                            'BRMPO_Freeway_CVMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO_Expressway_CVMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO_Mj Arterial_CVMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO_Mn Arterial_CVMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO_Total_CVMT': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -518,11 +520,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\emat\\cvmt_factype.csv",
 			            measure_getters ={
-                            'BRMPO_Freeway CVMT': loc['BRMPO', 'Freeway'],
-                            'BRMPO_Expressway CVMT': loc['BRMPO', 'Expressway'],
-                            'BRMPO_Mj Arterial CVMT': loc['BRMPO', 'Major Arterial'],
-                            'BRMPO_Mn Arterial CVMT': loc['BRMPO', 'Minor Arterial'],
-                            'BRMPO_Total CVMT': loc['BRMPO', 'Total'],
+                            'BRMPO_Freeway_CVMT': loc['BRMPO', 'Freeway'],
+                            'BRMPO_Expressway_CVMT': loc['BRMPO', 'Expressway'],
+                            'BRMPO_Mj Arterial_CVMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO_Mn Arterial_CVMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO_Total_CVMT': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
                         index_col=0
@@ -541,7 +543,7 @@ class TDM23_EMAT(FilesCoreModel):
                             'shtl': loc['shtl',:],
                             'rta': loc['rta',:],
                             'regb': loc['regb',:],
-                            'total transit': loc['Total',:]
+                            'total_transit': loc['Total',:]
                             },
                         on_bad_lines = 'skip',
                         index_col=0
