@@ -483,8 +483,8 @@ class TDM23_EMAT(FilesCoreModel):
 			            measure_getters ={
                             'BRMPO_Freeway_VMT': loc['BRMPO', 'Freeway'],
                             'BRMPO_Expressway_VMT': loc['BRMPO', 'Expressway'],
-                            'BRMPO_Mj Arterial_VMT': loc['BRMPO', 'Major Arterial'],
-                            'BRMPO_Mn Arterial_VMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO_Mj_Arterial_VMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO_Mn_Arterial_VMT': loc['BRMPO', 'Minor Arterial'],
                             'BRMPO_Total_VMT': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
@@ -509,8 +509,8 @@ class TDM23_EMAT(FilesCoreModel):
 			            measure_getters ={
                             'BRMPO_Freeway_CVMT': loc['BRMPO', 'Freeway'],
                             'BRMPO_Expressway_CVMT': loc['BRMPO', 'Expressway'],
-                            'BRMPO_Mj Arterial_CVMT': loc['BRMPO', 'Major Arterial'],
-                            'BRMPO_Mn Arterial_CVMT': loc['BRMPO', 'Minor Arterial'],
+                            'BRMPO_Mj_Arterial_CVMT': loc['BRMPO', 'Major Arterial'],
+                            'BRMPO_Mn_Arterial_CVMT': loc['BRMPO', 'Minor Arterial'],
                             'BRMPO_Total_CVMT': loc['BRMPO', 'Total'],
                             },
                         on_bad_lines = 'skip',
