@@ -399,6 +399,35 @@ class TDM23_EMAT(FilesCoreModel):
 
         self.scenario_values[param_name] = param_value
         return [evar]  
+    
+    def __network_param(self, macro, ds_args, evar, expvars):
+        # used to set linksnodes, routesstops, and associated files
+
+        param_value = expvars[evar]
+
+        if param_value == '2050pln':
+            netbase = "%InputFolder%\\networks\\tdm23.1.0\\2050pln\\tdm23_1_0_2050pln" 
+            modetab = "%InputFolder%\\params\\transit_modes_2050_20231231.bin"
+            warmspd = "%InputFolder%\\networks\\tdm23.1.0\\2050pln\\warm_start\\"
+        elif param_value == 2019:
+            netbase = "%InputFolder%\\networks\\tdm23.1.0\\2019\\tdm23_1_0_2019"
+            modetab = "%InputFolder%\\params\\transit_modes_2019_20231231.bin"
+            warmspd = "%InputFolder%\\networks\\tdm23.1.0\\2019\\warm_start\\"
+        else: 
+            _logger.error(f"ERROR: network scenario {param_value} undefined")
+            _logger.error(f"evar {evar}")
+            _logger.error(f"expvars {expvars}")
+            sys.exit()
+
+        self.scenario_values["Highway Input"] = netbase + "_ln.dbd"
+        self.scenario_values["Transit Input"] = netbase + "_rs.rts"
+        self.scenario_values["Turn Penalties"] = netbase + "_tpen.bin"
+        self.scenario_values["Init Speeds - am"] = warmspd + "base_am_speeds.bin"
+        self.scenario_values["Init Speeds - md"] = warmspd + "base_md_speeds.bin"
+        self.scenario_values["Init PnR Demand - am"] = warmspd + "pnr_ta_acc_am.mtx"
+        self.scenario_values["Transit Mode Table"] = modetab
+
+        return [evar]      
       
     # ============================================================================
     # Hooks to macros and methods for CTPS
@@ -417,6 +446,10 @@ class TDM23_EMAT(FilesCoreModel):
         "HRT Reliability":          (__direct_scenario_param,None, "Transit HRT Time Adjustment"),
         "Post-Pandemic WFH":        (__direct_scenario_param,None, "WFH Adjustment"),
         "AV Operations":            (__direct_scenario_param,None, "AV PCE Adjustment"),
+        "Highway Toll":             (__direct_scenario_param,None, "Highway Toll Adjustment"),
+        "Transit Fare":             (__direct_scenario_param,None, "Transit Fare Adjustment"),
+        "Bus Lanes":                (__direct_scenario_param,None, "Enable Bus Lanes"),
+        "Network Scenario":         (__network_param,None, "Network Scenario"),
     }
 
 
