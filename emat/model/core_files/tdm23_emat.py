@@ -405,11 +405,11 @@ class TDM23_EMAT(FilesCoreModel):
 
         param_value = expvars[evar]
 
-        if param_value == '2050pln':
+        if param_value == '50pln':
             netbase = "%InputFolder%\\networks\\tdm23.1.0\\2050pln\\tdm23_1_0_2050pln" 
             modetab = "%InputFolder%\\params\\transit_modes_2050_20231231.bin"
             warmspd = "%InputFolder%\\networks\\tdm23.1.0\\2050pln\\warm_start\\"
-        elif param_value == 2019:
+        elif param_value == '19base':
             netbase = "%InputFolder%\\networks\\tdm23.1.0\\2019\\tdm23_1_0_2019"
             modetab = "%InputFolder%\\params\\transit_modes_2019_20231231.bin"
             warmspd = "%InputFolder%\\networks\\tdm23.1.0\\2019\\warm_start\\"
@@ -582,7 +582,7 @@ class TDM23_EMAT(FilesCoreModel):
                         index_col=0
                     ),                                                                                          
         TableParser(
-                        filename = "_summary\\emat\\emission_highway_mpo.csv",
+                        filename = "_summary\\emat\\emission_mpo.csv",
 			            measure_getters ={
                             'BRMPO_CO2': loc['BRMPO', 'CO2\n(kg)'],
                             'BRMPO_CO': loc['BRMPO', 'CO\n(kg)'],
