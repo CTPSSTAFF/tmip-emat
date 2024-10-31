@@ -584,11 +584,11 @@ class TDM23_EMAT(FilesCoreModel):
         TableParser(
                         filename = "_summary\\emat\\emission_mpo.csv",
 			            measure_getters ={
-                            'BRMPO_CO2': loc['BRMPO', 'CO2\n(kg)'],
-                            'BRMPO_CO': loc['BRMPO', 'CO\n(kg)'],
-                            'BRMPO_SO': loc['BRMPO', 'SO\n(kg)'],
-                            'BRMPO_NO': loc['BRMPO', 'NO\n(kg)'],
-                            'BRMPO_VOC': loc['BRMPO', 'VOC\n(kg)'],
+                            'BRMPO_CO2': loc['BRMPO', 'CO2<br>(kg)'],
+                            'BRMPO_CO': loc['BRMPO', 'CO<br>(kg)'],
+                            'BRMPO_SO': loc['BRMPO', 'SO<br>(kg)'],
+                            'BRMPO_NO': loc['BRMPO', 'NO<br>(kg)'],
+                            'BRMPO_VOC': loc['BRMPO', 'VOC<br>(kg)'],
                             },
                         index_col=0
                     ),    
