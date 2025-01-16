@@ -410,9 +410,9 @@ class TDM23_EMAT(FilesCoreModel):
             modetab = "%InputFolder%\\params\\transit_modes_2050_20231231.bin"
             warmspd = "%InputFolder%\\networks\\tdm23.1.0\\2050pln\\warm_start\\"
         elif param_value == '19base':
-            netbase = "%InputFolder%\\networks\\tdm23.1.0\\2019\\tdm23_1_0_2019"
-            modetab = "%InputFolder%\\params\\transit_modes_2019_20231231.bin"
-            warmspd = "%InputFolder%\\networks\\tdm23.1.0\\2019\\warm_start\\"
+            netbase = "%InputFolder%\\networks\\v3\\2019\\tdm23_1_0_v3_2019"
+            modetab = "%InputFolder%\\params\\transit_modes_2019_20250114_ovttweights.bin"
+            warmspd = "%InputFolder%\\networks\\v3\\2019\\warm_start\\"
         else: 
             _logger.error(f"ERROR: network scenario {param_value} undefined")
             _logger.error(f"evar {evar}")
