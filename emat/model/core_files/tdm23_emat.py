@@ -400,19 +400,31 @@ class TDM23_EMAT(FilesCoreModel):
         self.scenario_values[param_name] = param_value
         return [evar]  
     
+    def __wfh_adj_param(self, macro, ds_args, evar, expvars):
+        # used to enable wfh and set adjustment from post-pandemic levels
+        # NOTE: only works with both workers and employment WFH settings
+
+        param_value = expvars[evar]
+
+        if param_value > 0: # some work from home
+            self.scenario_values["WFH Adjustment"] = param_value
+            self.scenario_values["WFH Mode"] = "WFH for both workers and employment"
+
+        return [evar]  
+
     def __network_param(self, macro, ds_args, evar, expvars):
         # used to set linksnodes, routesstops, and associated files
 
         param_value = expvars[evar]
 
         if param_value == '50pln':
-            netbase = "%InputFolder%\\networks\\tdm23.1.0\\2050pln\\tdm23_1_0_2050pln" 
-            modetab = "%InputFolder%\\params\\transit_modes_2050_20231231.bin"
-            warmspd = "%InputFolder%\\networks\\tdm23.1.0\\2050pln\\warm_start\\"
+            netbase = "%InputFolder%\\networks\\tdm23.2.1\\2050pln\\tdm23_2_1_2050pln" 
+            modetab = "%InputFolder%\\params\\transit_modes_2050_20250131.bin"
+            warmspd = "%InputFolder%\\networks\\tdm23.2.1\\2050pln\\warm_start\\"
         elif param_value == '19base':
-            netbase = "%InputFolder%\\networks\\v3\\2019\\tdm23_1_0_v3_2019"
-            modetab = "%InputFolder%\\params\\transit_modes_2019_20250114_ovttweights.bin"
-            warmspd = "%InputFolder%\\networks\\v3\\2019\\warm_start\\"
+            netbase = "%InputFolder%\\networks\\tdm23.2.1\\2019\\tdm23_2_1_2019"
+            modetab = "%InputFolder%\\params\\transit_modes_2019_20250131.bin"
+            warmspd = "%InputFolder%\\networks\\tdm23.2.1\\2019\\warm_start\\"
         else: 
             _logger.error(f"ERROR: network scenario {param_value} undefined")
             _logger.error(f"evar {evar}")
@@ -422,13 +434,41 @@ class TDM23_EMAT(FilesCoreModel):
         self.scenario_values["Highway Input"] = netbase + "_ln.dbd"
         self.scenario_values["Transit Input"] = netbase + "_rs.rts"
         self.scenario_values["Turn Penalties"] = netbase + "_tpen.bin"
-        self.scenario_values["Init Speeds - am"] = warmspd + "base_am_speeds.bin"
-        self.scenario_values["Init Speeds - md"] = warmspd + "base_md_speeds.bin"
+        self.scenario_values["Init Speeds - am"] = warmspd + "am_speeds.bin"
+        self.scenario_values["Init Speeds - md"] = warmspd + "md_speeds.bin"
         self.scenario_values["Init PnR Demand - am"] = warmspd + "pnr_ta_acc_am.mtx"
         self.scenario_values["Transit Mode Table"] = modetab
 
         return [evar]      
       
+    def __lu_param(self, macro, ds_args, evar, expvars):
+        # used to set linksnodes, routesstops, and associated files
+
+        param_value = expvars[evar]
+
+        if param_value == 'lrtp':
+            pop = "%InputFolder%\\zonal\\ma_population_run_113-210_2050_v20250829.csv" 
+            emp = "%InputFolder%\\zonal\\ma_employment_run_113-210_2050_v20250829.csv"
+        elif param_value == 'tod_1':
+            pop = "%InputFolder%\\zonal\\ma_population_run_113-198_TOD_Scenario_1_2049_v20250507.csv" 
+            emp = "%InputFolder%\\zonal\\ma_employment_run_113-198_TOD_Scenario_1_2049_v20250422.csv"
+        elif param_value == 'tod_2':
+            pop = "%InputFolder%\\zonal\\ma_population_run_113-198_TOD_Scenario_2_2049_v20250507.csv" 
+            emp = "%InputFolder%\\zonal\\ma_employment_run_113-198_TOD_Scenario_2_2049_v20250422.csv"
+        elif param_value == 'sprawl':
+            pop = "%InputFolder%\\zonal\\ma_population_run_113-198_SPRAWL_Scenario_3_2049_v20250516.csv" 
+            emp = "%InputFolder%\\zonal\\ma_employment_run_113-198_SPRAWL_Scenario_3_2049_v20250516.csv"                        
+        else: 
+            _logger.error(f"ERROR: land use scenario {param_value} undefined")
+            _logger.error(f"evar {evar}")
+            _logger.error(f"expvars {expvars}")
+            sys.exit()
+
+        self.scenario_values["Population MA"] = pop
+        self.scenario_values["Employment MA"] = emp
+
+        return [evar]         
+
     # ============================================================================
     # Hooks to macros and methods for CTPS
     # ============================================================================
@@ -444,12 +484,13 @@ class TDM23_EMAT(FilesCoreModel):
         "Electric Bike":            (__direct_scenario_param,None, "Bike Speed"),
         "TNC Availability":         (__direct_scenario_param,None, "TNC Fare Wait Adjustment"),
         "HRT Reliability":          (__direct_scenario_param,None, "Transit HRT Time Adjustment"),
-        "Post-Pandemic WFH":        (__direct_scenario_param,None, "WFH Adjustment"),
+        "Post-Pandemic WFH":        (__wfh_adj_param,None, "WFH Adjustment"),
         "AV Operations":            (__direct_scenario_param,None, "AV PCE Adjustment"),
         "Highway Toll":             (__direct_scenario_param,None, "Highway Toll Adjustment"),
         "Transit Fare":             (__direct_scenario_param,None, "Transit Fare Adjustment"),
         "Bus Lanes":                (__direct_scenario_param,None, "Enable Bus Lanes"),
         "Network Scenario":         (__network_param,None, "Network Scenario"),
+        "Land Use Scenario":        (__lu_param,None, "Land Use Scenario"),
     }
 
 
