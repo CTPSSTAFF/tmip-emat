@@ -418,13 +418,17 @@ class TDM23_EMAT(FilesCoreModel):
         param_value = expvars[evar]
 
         if param_value == '50pln':
-            netbase = "%InputFolder%\\networks\\tdm23.2.1\\2050pln\\tdm23_2_1_2050pln" 
-            modetab = "%InputFolder%\\params\\transit_modes_2050_20250131.bin"
-            warmspd = "%InputFolder%\\networks\\tdm23.2.1\\2050pln\\warm_start\\"
+            netbase = "%InputFolder%\\networks\\tdm23.3.0\\2050pln\\tdm23_3_0_2050pln" 
+            modetab = "%InputFolder%\\params\\transit_modes_20260929.bin"
+            warmspd = "%InputFolder%\\networks\\tdm23.3.0\\2050pln\\warm_start\\"
         elif param_value == '19base':
-            netbase = "%InputFolder%\\networks\\tdm23.2.1\\2019\\tdm23_2_1_2019"
+            netbase = "%InputFolder%\\networks\\tdm23.3.0\\2019\\tdm23_2_1_2019"
             modetab = "%InputFolder%\\params\\transit_modes_2019_20250131.bin"
-            warmspd = "%InputFolder%\\networks\\tdm23.2.1\\2019\\warm_start\\"
+            warmspd = "%InputFolder%\\networks\\tdm23.3.0\\2019\\warm_start\\"
+        elif param_value == '24base':
+            netbase = "%InputFolder%\\networks\\tdm23.3.0\\2024\\tdm23_3_0_2024"
+            modetab = "%InputFolder%\\params\\transit_modes_20260929.bin"
+            warmspd = "%InputFolder%\\networks\\tdm23.3.0\\2024\\warm_start\\"            
         else: 
             _logger.error(f"ERROR: network scenario {param_value} undefined")
             _logger.error(f"evar {evar}")
