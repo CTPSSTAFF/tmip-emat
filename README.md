@@ -11,3 +11,16 @@ capabilities of the [EMA Workbench](https://github.com/quaquel/EMAworkbench).
 
 Documentation for this tool is published at 
 [http://tmip-emat.github.io](http://tmip-emat.github.io).
+
+## Quick Start
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+
+```console
+git clone https://github.com/CTPSSTAFF/tmip-emat.git
+cd tmip-emat
+uv sync
+uv run jupyter lab
+```
+
+Run the tests with `uv run pytest`.

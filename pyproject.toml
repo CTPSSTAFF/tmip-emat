@@ -57,6 +57,9 @@ dependencies = [
     "jupytext",
     "statsmodels",
     "anywidget",
+    "psutil",
+    "pywinauto; sys_platform == 'win32'",
+    "pywin32; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
