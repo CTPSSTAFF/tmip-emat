@@ -8,33 +8,32 @@ Quick Start
 
 To get started with TMIP-EMAT, you'll need to follow a few simple steps.
 
-1. Install `Anaconda Python 3.9 <https://www.anaconda.com/download>`_.
-2. Open the 'Anaconda Prompt' that was installed and run the following
+1. Install `Miniforge <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
+2. Open the 'Miniforge Prompt' that was installed and run the following
    commands:
 
 .. code-block:: console
 
-    conda env create TMIP/EMAT
+    conda env create -n EMAT -f https://raw.githubusercontent.com/tmip-emat/tmip-emat/refs/heads/main/conda-envs/EMAT.yml
     conda activate EMAT
-    jupyter-notebook
+    jupyter lab
 
 More detailed instructions appear below.
 
 Installing Python
 -----------------
 
-To use TMIP-EMAT, you'll need to have Python 3.7, plus a handful
+To use TMIP-EMAT, you'll need to have Python 3.7 or later, plus a handful
 of other useful statistical packages.  The easiest way to get the basics
-is to download and install the `Anaconda <https://www.anaconda.com/download>`_
-version of Python 3.7. This comes with everything you'll need to get started,
+is to download and install the `Miniforge <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_
+version of Python. This comes with everything you'll need to get started,
 and the Anaconda folks have helpfully curated a selection of useful tools for you,
 so you don't have the sort through the huge selection of tools, both good and bad,
 that are available for Python.
 
 .. note::
 
-    Python has two versions (2 and 3) that are available.
-    TMIP-EMAT is compatible *only* with version 3.
+    TMIP-EMAT is compatible *only* with Python version 3.
 
 You should usually install Anaconda for the local user,
 which does not require administrator permissions.
@@ -77,31 +76,20 @@ is available in the conda documentation itself.
 Creating a New Environment for TMIP-EMAT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note::
-
-    If you installed the "Miniconda" version of the anaconda package, or
-    if your main conda installation is a bit out of date, you
-    may need to install or update the *conda* and *anaconda-client* packages
-    before the remote environment installation below will work:
-
-    .. code-block:: console
-
-        conda install -n base -c defaults conda anaconda-client
-
 If you'd like one command to just install TMIP-EMAT and
 the suite of related tools relevant for exploratory modeling and analysis
 analysis, you can create a new environment for EMAT with one line.
 
 .. code-block:: console
 
-    conda env create TMIP/EMAT
+    conda env create -f https://raw.githubusercontent.com/tmip-emat/tmip-emat/refs/heads/main/conda-envs/EMAT.yml
 
 If you've already installed the *EMAT* environment and want to update it to the latest
 version, you can use:
 
 .. code-block:: console
 
-    conda env update TMIP/EMAT --prune
+    conda env update -f https://raw.githubusercontent.com/tmip-emat/tmip-emat/refs/heads/main/conda-envs/EMAT.yml --prune
 
 The *prune* option here will remove packages that are not ordinarily included in the
 *EMAT* environment; omit that function if you've installed extra packages that you
@@ -113,15 +101,14 @@ Installing TMIP-EMAT in an Existing Environment
 
 If you already have an existing environment you want to use, or if you'd like to
 skip the advice above and install TMIP-EMAT into the base environment, you can
-do so using the regular `conda install` tool.  Activate the environment you want
+do so using the regular `pip install` tool.  Activate the environment you want
 to install into, and then run:
 
 .. code-block:: console
 
-    conda install emat -c tmip -c defaults -c conda-forge
+    pip install emat
 
-The extra channels (`-c channel_name`) here are required as TMIP-EMAT depends on
-other packages from a variety of places.  Because of these dependencies, there
+Because TMIP-EMAT has a bunch of specific dependencies, there
 is a fair chance that installing TMIP-EMAT into an existing environment may
 cause incompatibilities with other tools, so installing in this manner is not
 recommended.
