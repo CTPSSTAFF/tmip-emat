@@ -1,0 +1,93 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "emat"
+version = "0.6.0"
+description = "TMIP Exploratory Modeling and Analysis Tool"
+readme = "README.md"
+requires-python = ">=3.9,<3.12"
+dependencies = [
+    "numpy>=1.23,<1.24",
+    "pandas>=1.5,<2",
+    "appdirs",
+    "pydot",
+    "plotly>=4.14,<6",
+    "scipy<1.12",
+    "scikit-learn>=1.1.2,<1.2",
+    "seaborn",
+    "pyyaml",
+    "cloudpickle",
+    "packaging",
+    "addicty",
+    "yamllint",
+    "pathspec",
+    "tqdm",
+    "psutil",
+    "pywinauto; sys_platform == 'win32'",
+    "pywin32; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+analysis = [
+    "matplotlib>=3.0.1",
+    "kaleido",
+    "datashader",
+    "ipywidgets>=8.0.2",
+    "joblib>=1.2",
+    "dask",
+    "distributed",
+    "ipyparallel",
+    "pyzmq",
+    "platypus-opt",
+    "altair",
+    "salib",
+    "sqlalchemy",
+    "statsmodels",
+    "webcolors",
+    "boto3",
+]
+notebook = [
+    "jupyter",
+    "jupyterlab",
+    "notebook",
+    "ipykernel>=5.1",
+]
+docs = [
+    "sphinx",
+    "pygments>=2.2.0",
+    "docutils>=0.14",
+    "sphinx_rtd_theme",
+    "sphinxcontrib-restbuilder",
+    "nbsphinx",
+    "jupyter_sphinx",
+    "jupytext",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=4.0.1",
+    "pytest-regressions",
+]
+
+[project.scripts]
+emat-road-test-demo = "emat.model.core_python.core_python_examples:_Road_Capacity_Investment_CmdLine"
+
+[tool.setuptools.packages.find]
+include = ["emat*"]
+
+[tool.setuptools.package-data]
+emat = [
+    "model/tests/*.yaml",
+    "scope/tests/*.yaml",
+    "database/sqlite/*.sql",
+    "examples/**/*.yaml",
+    "examples/**/*.yml",
+    "examples/**/*.csv",
+    "examples/**/*.xlsx",
+    "examples/**/*.db.gz",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
