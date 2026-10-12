@@ -19,7 +19,7 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 ```console
 git clone https://github.com/CTPSSTAFF/tmip-emat.git
 cd tmip-emat
-uv sync --all-extras
+uv sync
 uv run jupyter lab
 ```
 

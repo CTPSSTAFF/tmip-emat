@@ -26,26 +26,12 @@ Anaconda installation is needed.
 
     git clone https://github.com/CTPSSTAFF/tmip-emat.git
     cd tmip-emat
-    uv sync --all-extras
+    uv sync
     uv run jupyter lab
 
 ``uv sync`` creates a ``.venv`` folder in the project, installs the Python
 version named in ``.python-version`` if needed, and installs TMIP-EMAT and its
 dependencies exactly as recorded in ``uv.lock``.
-
-Optional Dependencies
----------------------
-
-The core ``emat`` package installs only the essential dependencies.  Extras
-are available for additional functionality:
-
-- ``analysis``: visualization, optimization, and parallel computing tools
-- ``notebook``: Jupyter Notebook and JupyterLab
-- ``docs``: tools to build this documentation
-
-.. code-block:: console
-
-    uv sync --extra analysis --extra notebook
 
 Using TMIP-EMAT in Another Project
 ----------------------------------
@@ -55,10 +41,10 @@ virtual environment with pip:
 
 .. code-block:: console
 
-    uv add "emat[analysis,notebook] @ git+https://github.com/CTPSSTAFF/tmip-emat.git"
+    uv add "emat @ git+https://github.com/CTPSSTAFF/tmip-emat.git"
 
     # or, within an activated virtual environment
-    uv pip install "emat[analysis,notebook] @ git+https://github.com/CTPSSTAFF/tmip-emat.git"
+    uv pip install "emat @ git+https://github.com/CTPSSTAFF/tmip-emat.git"
 
 Running Jupyter
 ---------------
@@ -83,7 +69,7 @@ Development
 
 .. code-block:: console
 
-    uv sync --all-extras    # includes the dev dependency group (pytest)
+    uv sync --all-extras --dev
     uv run pytest
 
 Troubleshooting
@@ -93,7 +79,7 @@ Troubleshooting
   not installed by pip or uv.  Install it separately from
   `graphviz.org <https://graphviz.org/download/>`_ if you need those diagrams.
 - Dependencies are pinned to versions compatible with the current code
-  (see ``pyproject.toml``); Python 3.9 to 3.11 is supported.
+  (see ``pyproject.toml``); Python 3.10 is required.
 - If the interface seems sluggish in the Jupyter notebook, try a different
   browser; Google Chrome has been found to be much more performant for the
   interactive visualizations.

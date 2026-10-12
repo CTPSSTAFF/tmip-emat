@@ -15,14 +15,13 @@ source code is recommended.
 .. toctree::
 
     emat.uv
+    emat.conda
     emat.git
 
 
 .. note::
 
-	Python has two versions (2 and 3) but .
-	`only version 3 is currently maintained for most tools <https://python3statement.org>`_.
-	TMIP-EMAT is compatible *only* with version 3.6 or later.
+	TMIP-EMAT is compatible *only* with Python version 3.6 or later.
 
 **Core Model Configuration**
 
