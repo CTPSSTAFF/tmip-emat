@@ -146,8 +146,8 @@ class TDM23_EMAT(FilesCoreModel):
                       
             except KeyError:
                 _logger.info("Experiment variable method not found, defaulting to direct set")
-                self.scenario_values[xv] = expvars[xv]
-                variables_done += xv
+                self.scenario_values[xv] = self.__com_safe(expvars[xv])
+                variables_done.append(xv)
         
         # set values to scenario
         self.load_model()        
@@ -390,13 +390,22 @@ class TDM23_EMAT(FilesCoreModel):
         time.sleep(5)
         self.tc = None        
 
+    @staticmethod
+    def __com_safe(value):
+        # win32com marshals Python bools as VARIANT_BOOL, so True arrives in
+        # GISDK as -1; send integers instead so the scenario gets 1/0
+        if isinstance(value, (bool, np.bool_)):
+            return int(value)
+        return value
+
     def __direct_scenario_param(self, macro, ds_args, evar, expvars):
         # used when scope value directly matches model scenario parameter
         # no transformation needed
 
         param_name = ds_args
-        param_value = expvars[evar]
-
+        param_value = self.__com_safe(expvars[evar])
+        if isinstance(param_value, (bool, np.bool_)):
+            param_value = int(param_value)   # COM would otherwise send True as -1
         self.scenario_values[param_name] = param_value
         return [evar]  
     
